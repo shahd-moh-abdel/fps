@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(hello)
+project(fps)
 
-add_executable(hello src/helloMake.cpp src/addNum.cpp include/addNum.h)
+add_executable(fps src/main.cpp glad.c)
+
+find_package(glfw3 3.3 REQUIRED)
+
+target_link_libraries(fps PRIVATE glfw)
