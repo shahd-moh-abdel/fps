@@ -22,7 +22,7 @@ const GLuint NumVertices = 6;
 static const GLfloat vertices[NumVertices * 2] = {
   -0.90f, -0.90f,
   +0.85f, -0.90f,
-  -0.90f,  +0.85,
+  -0.90f,  +0.85f,
 
   //triangle 2
   +0.90f, -0.85f,
@@ -41,7 +41,7 @@ GLFWwindow* initWindow()
   GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "FPS", NULL, NULL);
 
   //error creating the window
-  if (window == GL_FALSE)
+  if (window == nullptr)
     {
       cout << "ERROR: Window not created" << endl;
       return nullptr;
@@ -75,17 +75,16 @@ void setupTriangles()
 
   //setup vertex attrib
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)0);
+
+  glEnableVertexAttribArray(0);
   
   glBindVertexArray(0);
-  glEnableVertexAttribArray(0);
 }
 
 void setupShaders()
 {
   auto shader = parseShader("../res/triangles.glsl");
-  cout << "done file parsed" << endl;
   shaderProgram = createShader(shader.vertexShader, shader.fragmentShader);
-  cout << shader.vertexShader << endl;
 }
 
 void display()
@@ -134,7 +133,7 @@ void cleanup()
 int main()
 {
   GLFWwindow* window = initWindow();
-  //if (!window) return -1;
+  if (!window) return -1;
 
   setupTriangles();
   setupShaders();

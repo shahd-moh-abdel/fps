@@ -23,13 +23,12 @@ shaderProgram parseShader(const string &filePath)
 	{
 	  if (line.find("vertex") != string::npos)
 	    type = 0; // 0 == VERTEX
-	  if (line.find("fragment") != string::npos)
+	  else if (line.find("fragment") != string::npos)
 	    type = 1; // 1 == FRAGMENT
 	}
-      else
+      else if (type != -1)
 	ss[(int)type] << line << '\n';
 
-      cout << line << endl;
     }
 
   return {ss[0].str(), ss[1].str()};
@@ -53,6 +52,7 @@ unsigned int compileShader(unsigned int type, const string& source)
       glGetShaderInfoLog(id, length, &length, message);
       cout << "ERROR: error in" << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << " Shader: " << message << endl;
       glDeleteShader(id);
+      return 0;
     }
   
   return id;
