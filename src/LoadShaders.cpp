@@ -28,6 +28,8 @@ shaderProgram parseShader(const string &filePath)
 	}
       else
 	ss[(int)type] << line << '\n';
+
+      cout << line << endl;
     }
 
   return {ss[0].str(), ss[1].str()};
@@ -41,6 +43,18 @@ unsigned int compileShader(unsigned int type, const string& source)
   glShaderSource(id, 1, &src, nullptr);
   glCompileShader(id);
 
+  int result;
+  glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+  if (result == GL_FALSE)
+    {
+      int length;
+      glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+      char* message = (char*)alloca(length * sizeof(char));
+      glGetShaderInfoLog(id, length, &length, message);
+      cout << "ERROR: error in" << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << " Shader: " << message << endl;
+      glDeleteShader(id);
+    }
+  
   return id;
 }
 
