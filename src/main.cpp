@@ -2,6 +2,8 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "../include/stb_image.h"
 #include "../include/LoadShaders.h"
 
 using namespace std;
@@ -17,20 +19,64 @@ GLuint quadVAO = 0;
 GLuint quadVBO = 0;
 GLuint quadEBO = 0;
 GLuint shaderProgram = 0;
+GLuint texture = 0;
 
 // quad vertices
-const GLuint NumVertices = 6;
-static const GLfloat vertices[NumVertices * 2] = {
-  -0.5f, -0.5f,
-  +0.5f, -0.5f,
-  +0.5f, +0.5f,
-  -0.5f, +0.5f
+const GLuint NumVertices = 4;
+// (x, y)-position, (u, v)-texture coords 
+static const GLfloat vertices[NumVertices * 4] = {
+  -0.5f, -0.5f,      0.0f, 0.0f,
+  +0.5f, -0.5f,      1.0f, 0.0f,
+  +0.5f, +0.5f,      1.0f, 1.0f,
+  -0.5f, +0.5f,      0.0f, 1.0f
 };
 
 static const GLuint indices[] = {
   0, 1, 2,//first tri
   2, 3, 0 //second tri
 };
+
+GLuint loadTexture(const char* path)
+{
+  GLuint textureID;
+  glGenTextures(1, &textureID);
+
+  int width, height, nrComponents;
+  unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
+  if (data)
+    {
+      GLenum format = GL_RGB;
+      if (nrComponents == 1)
+	format = GL_RED;
+      else if (nrComponents == 3)
+	format = GL_RGB;
+      else if (nrComponents == 4)
+	format = GL_RGBA;
+
+      glBindTexture(GL_TEXTURE_2D, textureID);
+      glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+
+      glGenerateMipmap(GL_TEXTURE_2D);
+
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+      stbi_image_free(data);
+
+      cout << path << '\n' << width << ":" << height << endl;
+    }
+  else
+    {
+      cout << "failed to load texture: " << path << endl;
+      stbi_image_free(data);
+
+      //fallback texture here
+    }
+  return textureID;
+}
 
 GLFWwindow* initWindow()
 {
@@ -82,6 +128,10 @@ void setupQuad()
   //setup vertex attrib
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)0);
   glEnableVertexAttribArray(0);
+
+  // texture coord loc=1
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat)));
+  glEnableVertexAttribArray(1);
   
   glBindVertexArray(0);
 }
@@ -90,6 +140,11 @@ void setupShaders()
 {
   auto shader = parseShader("../res/triangles.glsl");
   shaderProgram = createShader(shader.vertexShader, shader.fragmentShader);
+}
+
+void setupTextures()
+{
+  texture = loadTexture("../res/wall.jpg");
 }
 
 void display()
@@ -101,6 +156,14 @@ void display()
 
   //use shader program
   glUseProgram(shaderProgram);
+
+  //bind texture
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture);
+
+  //set texture uniform
+  GLint textureLocation = glGetUniformLocation(shaderProgram, "u_wallTexture");
+  glUniform1i(textureLocation, 0);
 
   //bind vao and draw
   glBindVertexArray(quadVAO);
@@ -123,10 +186,20 @@ void cleanup()
       glDeleteBuffers(1, &quadVBO);
       quadVBO = 0;
     }
+  if (quadEBO != 0)
+    {
+      glDeleteBuffers(1, &quadEBO);
+      quadEBO = 0;
+    }
   if (quadVAO != 0)
     {
       glDeleteVertexArrays(1, &quadVAO);
       quadVAO = 0;
+    }
+  if (texture != 0)
+    {
+      glDeleteTextures(1, &texture);
+      texture = 0;
     }
   if (shaderProgram != 0)
     {
@@ -142,6 +215,7 @@ int main()
 
   setupQuad();
   setupShaders();
+  setupTextures();
   
   while (!glfwWindowShouldClose(window))
     {
