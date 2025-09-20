@@ -1,2 +1,2 @@
-ggg# first person shooter
+# first person shooter
 > doom like game

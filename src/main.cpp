@@ -13,23 +13,24 @@ using namespace std;
 int g_width = SCREEN_WIDTH;
 int g_height = SCREEN_HEIGHT;
 
-GLuint triangleVAO = 0;
-GLuint triangleVBO = 0;
+GLuint quadVAO = 0;
+GLuint quadVBO = 0;
+GLuint quadEBO = 0;
 GLuint shaderProgram = 0;
 
-// tow triangles vertices
+// quad vertices
 const GLuint NumVertices = 6;
 static const GLfloat vertices[NumVertices * 2] = {
-  -0.90f, -0.90f,
-  +0.85f, -0.90f,
-  -0.90f,  +0.85f,
-
-  //triangle 2
-  +0.90f, -0.85f,
-  +0.90f, +0.90f,
-  -0.85f, +0.90f
+  -0.5f, -0.5f,
+  +0.5f, -0.5f,
+  +0.5f, +0.5f,
+  -0.5f, +0.5f
 };
 
+static const GLuint indices[] = {
+  0, 1, 2,//first tri
+  2, 3, 0 //second tri
+};
 
 GLFWwindow* initWindow()
 {
@@ -60,22 +61,26 @@ GLFWwindow* initWindow()
   return window;
 }
 
-void setupTriangles()
+void setupQuad()
 {
   //gen and bind vao and vbo
-  glGenVertexArrays(1, &triangleVAO);
-  glGenBuffers(1, &triangleVBO);
+  glGenVertexArrays(1, &quadVAO);
+  glGenBuffers(1, &quadVBO);
+  glGenBuffers(1, &quadEBO);
 
   // bind vao first
-  glBindVertexArray(triangleVAO);
+  glBindVertexArray(quadVAO);
 
-  //bind vbo
-  glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
+  //bind and fill vbo
+  glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+  //indices buffer
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadEBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+  
   //setup vertex attrib
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)0);
-
   glEnableVertexAttribArray(0);
   
   glBindVertexArray(0);
@@ -90,16 +95,16 @@ void setupShaders()
 void display()
 {
   //clear screen
-  static const float black[] = {0.0f, 0.0f, 0.0f, 1.0f};
-  glClearColor(black[0], black[1], black[2], black[3]);
+  static const float darkGray[] = {0.2f, 0.2f, 0.2f, 1.0f};
+  glClearColor(darkGray[0], darkGray[1], darkGray[2], darkGray[3]);
   glClear(GL_COLOR_BUFFER_BIT);
 
   //use shader program
   glUseProgram(shaderProgram);
 
   //bind vao and draw
-  glBindVertexArray(triangleVAO);
-  glDrawArrays(GL_TRIANGLES, 0, NumVertices);
+  glBindVertexArray(quadVAO);
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
 }
 
@@ -113,15 +118,15 @@ void processInput(GLFWwindow* window)
 
 void cleanup()
 {
-  if (triangleVBO != 0)
+  if (quadVBO != 0)
     {
-      glDeleteBuffers(1, &triangleVBO);
-      triangleVBO = 0;
+      glDeleteBuffers(1, &quadVBO);
+      quadVBO = 0;
     }
-  if (triangleVAO != 0)
+  if (quadVAO != 0)
     {
-      glDeleteVertexArrays(1, &triangleVAO);
-      triangleVAO = 0;
+      glDeleteVertexArrays(1, &quadVAO);
+      quadVAO = 0;
     }
   if (shaderProgram != 0)
     {
@@ -135,7 +140,7 @@ int main()
   GLFWwindow* window = initWindow();
   if (!window) return -1;
 
-  setupTriangles();
+  setupQuad();
   setupShaders();
   
   while (!glfwWindowShouldClose(window))
