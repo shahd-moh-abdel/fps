@@ -111,7 +111,7 @@ struct QuadInstance {
 // define quads
 vector<QuadInstance> quadInstances = {
   // x,   y,  z,    scaleX,  scaleY,  scaleZ,  rotation,  textureIndex
-  {-1.5, 0.5, 0.0f, 1.0f,    1.0f,    1.0f,    0.0f,        0} //left wall
+  {0.0, 0.5, 0.0f, 1.0f,    1.0f,    1.0f,    0.0f,        0} //left wall
 };
 
 void setupQuad()
