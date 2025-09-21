@@ -2,6 +2,9 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+#include <vector>
+#include <cmath>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "../include/stb_image.h"
 #include "../include/LoadShaders.h"
@@ -21,7 +24,13 @@ GLuint quadVAO = 0;
 GLuint quadVBO = 0;
 GLuint quadEBO = 0;
 GLuint shaderProgram = 0;
-GLuint texture = 0;
+
+vector<GLuint> textures;
+vector<const char *> textureNames = {
+  "../res/wall.jpg",
+  "../res/floor.jpg",
+  "../res/ceiling.jpg"
+};
 
 // quad vertices
 const GLuint NumVertices = 4;
@@ -34,8 +43,75 @@ static const GLfloat vertices[NumVertices * 4] = {
 };
 
 static const GLuint indices[] = {
-  0, 1, 2,//first tri
-  2, 3, 0 //second tri
+    0, 1, 2, // first tri
+    2, 3, 0  // second tri
+};
+
+struct Mat4 {
+  float m[16];
+
+  Mat4() {
+    // init as identity mat
+    for (int i = 0; i < 16; i++) m[i] = 0.0f;
+    m[0] = m[5] = m[10] = m[15] = 1.0f;
+  }
+
+  // translation matrix
+  static Mat4 translate(float x, float y, float z) {
+    Mat4 result;
+    result.m[12] = x;
+    result.m[13] = y;
+    result.m[14] = z;
+    return result;
+  }
+
+  static Mat4 scale(float x, float y, float z) {
+    Mat4 result;
+    result.m[0] = x;
+    result.m[5] = y;
+    result.m[10] = z;
+    return result;
+  }
+
+  //rotate around z
+  static Mat4 rotateZ(float angleRadians) {
+    Mat4 result;
+    float c = cos(angleRadians);
+    float s = sin(angleRadians);
+    result.m[0] = c;
+    result.m[1] = s;
+    result.m[4] = -s;
+    result.m[5] = c;
+    return result;
+  }
+
+  // matrix multiplication
+  Mat4 operator*(const Mat4& other) const {
+    Mat4 result;
+    for (int i = 0; i < 4; i++)
+      {
+	for (int j = 0; j < 4; j++)
+	  {
+	    result.m[i*4 + j] = 0;
+	    for (int k = 0; k < 4; k++)
+	      result.m[i*4 + j] += m[i*4 + k] * other.m[k*4 + j];
+	  }
+      }
+    return result;
+  }
+};
+
+struct QuadInstance {
+  float x, y, z;
+  float scaleX, scaleY, scaleZ;
+  float rotation;
+  int textureIndex;
+};
+
+// define quads
+vector<QuadInstance> quadInstances = {
+  // x,   y,  z,    scaleX,  scaleY,  scaleZ,  rotation,  textureIndex
+  {-1.5, 0.5, 0.0f, 1.0f,    1.0f,    1.0f,    0.0f,        0} //left wall
 };
 
 void setupQuad()
@@ -69,13 +145,20 @@ void setupQuad()
 
 void setupShaders()
 {
-  auto shader = parseShader("../res/triangles.glsl");
+  auto shader = parseShader("../res/transformed.glsl");
   shaderProgram = createShader(shader.vertexShader, shader.fragmentShader);
 }
 
 void setupTextures()
 {
-  texture = loadTexture("../res/wall.jpg");
+  textures.clear();
+
+  for (const char* textureName : textureNames)
+    {
+      GLuint tex = loadTexture(textureName);
+      textures.push_back(tex);
+    }
+  cout << "Loaded " << textures.size() << " textures" << endl;
 }
 
 void display()
@@ -87,18 +170,34 @@ void display()
 
   //use shader program
   glUseProgram(shaderProgram);
-
-  //bind texture
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, texture);
-
-  //set texture uniform
-  GLint textureLocation = glGetUniformLocation(shaderProgram, "u_wallTexture");
-  glUniform1i(textureLocation, 0);
+  
+  //gete uniform locations
+  GLint modelLocation = glGetUniformLocation(shaderProgram, "u_model");  
+  GLint textureLocation = glGetUniformLocation(shaderProgram, "u_texture");
 
   //bind vao and draw
   glBindVertexArray(quadVAO);
-  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+  //render each quad instance
+  for (const auto& quad : quadInstances) {
+    Mat4 translation = Mat4::translate(quad.x, quad.y, quad.z);
+    Mat4 rotation = Mat4::rotateZ(quad.rotation);
+    Mat4 scaling =  Mat4::scale(quad.scaleX, quad.scaleY, quad.scaleZ);
+
+    //combine transformations
+    Mat4 model = translation * rotation * scaling;
+
+    //send matrix to shader
+    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, model.m);
+
+    //bind texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textures[quad.textureIndex]);
+    glUniform1i(textureLocation, 0);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+  }
+
   glBindVertexArray(0);
 }
 
@@ -127,11 +226,7 @@ void cleanup()
       glDeleteVertexArrays(1, &quadVAO);
       quadVAO = 0;
     }
-  if (texture != 0)
-    {
-      glDeleteTextures(1, &texture);
-      texture = 0;
-    }
+  textures.clear();
   if (shaderProgram != 0)
     {
       glDeleteProgram(shaderProgram);

@@ -1,2 +1,2 @@
 -Textures: https://www.freepik.com/
-
+trying to load more than one texture on the screen but it is blank I don't know what's going wrong (._.)>
