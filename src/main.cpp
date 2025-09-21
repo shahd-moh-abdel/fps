@@ -73,7 +73,22 @@ GLuint loadTexture(const char* path)
       cout << "failed to load texture: " << path << endl;
       stbi_image_free(data);
 
-      //fallback texture here
+      //fallback texture
+      unsigned char fallbackData[] = {
+	255, 0, 0, 255,
+	0, 0, 0, 255,
+	0, 0, 0, 255,
+	255, 0, 0, 255
+      };
+
+      glBindTexture(GL_TEXTURE_2D, textureID);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, fallbackData);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+      cout << "using fallback texture" << endl;
     }
   return textureID;
 }
@@ -126,7 +141,7 @@ void setupQuad()
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
   
   //setup vertex attrib
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)0);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)0);
   glEnableVertexAttribArray(0);
 
   // texture coord loc=1
@@ -144,7 +159,7 @@ void setupShaders()
 
 void setupTextures()
 {
-  texture = loadTexture("../res/wall.jpg");
+  texture = loadTexture("../res/wall.jp");
 }
 
 void display()
