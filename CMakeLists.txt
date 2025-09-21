@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(fps)
 
-add_executable(fps src/main.cpp src/LoadShaders.cpp include/LoadShaders.h include/stb_image.h glad.c)
+add_executable(fps src/main.cpp src/LoadShaders.cpp include/LoadShaders.h include/stb_image.h src/initWindow.cpp glad.c)
 
 find_package(glfw3 3.3 REQUIRED)
 

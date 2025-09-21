@@ -5,6 +5,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../include/stb_image.h"
 #include "../include/LoadShaders.h"
+#include "../include/initWindow.h"
 
 using namespace std;
 
@@ -26,9 +27,9 @@ const GLuint NumVertices = 4;
 // (x, y)-position, (u, v)-texture coords 
 static const GLfloat vertices[NumVertices * 4] = {
   -0.5f, -0.5f,      0.0f, 0.0f,
-  +0.5f, -0.5f,      1.0f, 0.0f,
-  +0.5f, +0.5f,      1.0f, 1.0f,
-  -0.5f, +0.5f,      0.0f, 1.0f
+  +0.5f, -0.5f,      2.0f, 0.0f,
+  +0.5f, +0.5f,      2.0f, 2.0f,
+  -0.5f, +0.5f,      0.0f, 2.0f
 };
 
 static const GLuint indices[] = {
@@ -93,35 +94,6 @@ GLuint loadTexture(const char* path)
   return textureID;
 }
 
-GLFWwindow* initWindow()
-{
-  glfwInit();
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  
-  GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "FPS", NULL, NULL);
-
-  //error creating the window
-  if (window == nullptr)
-    {
-      cout << "ERROR: Window not created" << endl;
-      return nullptr;
-    }
-
-  glfwMakeContextCurrent(window);
-
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-      cout << "ERROR: glad failed" << endl;
-      return nullptr;
-    }
-  
-  glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-  return window;
-}
-
 void setupQuad()
 {
   //gen and bind vao and vbo
@@ -159,7 +131,7 @@ void setupShaders()
 
 void setupTextures()
 {
-  texture = loadTexture("../res/wall.jp");
+  texture = loadTexture("../res/wall.jpg");
 }
 
 void display()
@@ -225,7 +197,7 @@ void cleanup()
 
 int main()
 {
-  GLFWwindow* window = initWindow();
+  GLFWwindow* window = initWindow(SCREEN_WIDTH, SCREEN_HEIGHT);
   if (!window) return -1;
 
   setupQuad();
