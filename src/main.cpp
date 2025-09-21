@@ -6,6 +6,7 @@
 #include "../include/stb_image.h"
 #include "../include/LoadShaders.h"
 #include "../include/initWindow.h"
+#include "../include/loadTexture.h"
 
 using namespace std;
 
@@ -27,72 +28,15 @@ const GLuint NumVertices = 4;
 // (x, y)-position, (u, v)-texture coords 
 static const GLfloat vertices[NumVertices * 4] = {
   -0.5f, -0.5f,      0.0f, 0.0f,
-  +0.5f, -0.5f,      2.0f, 0.0f,
-  +0.5f, +0.5f,      2.0f, 2.0f,
-  -0.5f, +0.5f,      0.0f, 2.0f
+  +0.5f, -0.5f,      1.0f, 0.0f,
+  +0.5f, +0.5f,      1.0f, 1.0f,
+  -0.5f, +0.5f,      0.0f, 1.0f
 };
 
 static const GLuint indices[] = {
   0, 1, 2,//first tri
   2, 3, 0 //second tri
 };
-
-GLuint loadTexture(const char* path)
-{
-  GLuint textureID;
-  glGenTextures(1, &textureID);
-
-  int width, height, nrComponents;
-  unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
-  if (data)
-    {
-      GLenum format = GL_RGB;
-      if (nrComponents == 1)
-	format = GL_RED;
-      else if (nrComponents == 3)
-	format = GL_RGB;
-      else if (nrComponents == 4)
-	format = GL_RGBA;
-
-      glBindTexture(GL_TEXTURE_2D, textureID);
-      glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-
-      glGenerateMipmap(GL_TEXTURE_2D);
-
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-      stbi_image_free(data);
-
-      cout << path << '\n' << width << ":" << height << endl;
-    }
-  else
-    {
-      cout << "failed to load texture: " << path << endl;
-      stbi_image_free(data);
-
-      //fallback texture
-      unsigned char fallbackData[] = {
-	255, 0, 0, 255,
-	0, 0, 0, 255,
-	0, 0, 0, 255,
-	255, 0, 0, 255
-      };
-
-      glBindTexture(GL_TEXTURE_2D, textureID);
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, fallbackData);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-      cout << "using fallback texture" << endl;
-    }
-  return textureID;
-}
 
 void setupQuad()
 {
