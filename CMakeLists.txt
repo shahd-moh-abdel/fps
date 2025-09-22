@@ -7,3 +7,5 @@ add_executable(fps src/main.cpp src/LoadShaders.cpp include/LoadShaders.h includ
 find_package(glfw3 3.3 REQUIRED)
 
 target_link_libraries(fps PRIVATE glfw)
+
+target_include_directories(fps PRIVATE ${GLM_INCLUDE_DIRS})
