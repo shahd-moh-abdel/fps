@@ -10,7 +10,7 @@
 #include "../include/LoadShaders.h"
 #include "../include/initWindow.h"
 #include "../include/loadTexture.h"
-
+#include "../include/Mat4.h" 
 using namespace std;
 
 #define SCREEN_WIDTH 700
@@ -47,59 +47,6 @@ static const GLuint indices[] = {
     2, 3, 0  // second tri
 };
 
-struct Mat4 {
-  float m[16];
-
-  Mat4() {
-    // init as identity mat
-    for (int i = 0; i < 16; i++) m[i] = 0.0f;
-    m[0] = m[5] = m[10] = m[15] = 1.0f;
-  }
-
-  // translation matrix
-  static Mat4 translate(float x, float y, float z) {
-    Mat4 result;
-    result.m[12] = x;
-    result.m[13] = y;
-    result.m[14] = z;
-    return result;
-  }
-
-  static Mat4 scale(float x, float y, float z) {
-    Mat4 result;
-    result.m[0] = x;
-    result.m[5] = y;
-    result.m[10] = z;
-    return result;
-  }
-
-  //rotate around z
-  static Mat4 rotateZ(float angleRadians) {
-    Mat4 result;
-    float c = cos(angleRadians);
-    float s = sin(angleRadians);
-    result.m[0] = c;
-    result.m[1] = s;
-    result.m[4] = -s;
-    result.m[5] = c;
-    return result;
-  }
-
-  // matrix multiplication
-  Mat4 operator*(const Mat4& other) const {
-    Mat4 result;
-    for (int i = 0; i < 4; i++)
-      {
-	for (int j = 0; j < 4; j++)
-	  {
-	    result.m[i*4 + j] = 0;
-	    for (int k = 0; k < 4; k++)
-	      result.m[i*4 + j] += m[i*4 + k] * other.m[k*4 + j];
-	  }
-      }
-    return result;
-  }
-};
 
 struct QuadInstance {
   float x, y, z;
@@ -110,8 +57,12 @@ struct QuadInstance {
 
 // define quads
 vector<QuadInstance> quadInstances = {
-  // x,   y,  z,    scaleX,  scaleY,  scaleZ,  rotation,  textureIndex
-  {0.0, 0.5, 0.0f, 1.0f,    1.0f,    1.0f,    0.0f,        0} //left wall
+  // x,   y,    z,    scaleX,  scaleY,  scaleZ,  rotation,    textureIndex
+  {0.0f,  0.5f, 0.0f, 1.0f,    1.0f,    1.0f,     0.0f,        0}, 
+  {0.5f,  0.5f, 0.0f, 1.2f,    0.8f,    1.0f,     0.3f,        1},
+  {0.0f, -1.2f, 0.0f, 0.8f,    0.8f,    1.0f,    -0.5f,        2},
+  {0.0f,  1.8f, 0.0f, 1.5f,    0.6f,    1.0f,     0.0f,        0},
+  {0.8f,  0.3f, 0.0f, 0.6f,    1.4f,    1.0f,     1.0f,        1}
 };
 
 void setupQuad()
