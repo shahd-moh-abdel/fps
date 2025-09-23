@@ -3,7 +3,5 @@
 --https://youtu.be/u-00hjlfMKc?si=s3aXCakOR7z-J8mW
 -GLM:
 --https://github.com/g-truc/glm
-I will use it instead of Mat4 (Can't maintain my own math lib lol)
 
-THE CUBE IS NOT CUBINNNNNG 
 

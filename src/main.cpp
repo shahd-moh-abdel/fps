@@ -26,6 +26,10 @@ using namespace std;
 int g_width = SCREEN_WIDTH;
 int g_height = SCREEN_HEIGHT;
 
+float g_rotateX = 0.0f;
+float g_rotateY = 0.0f;
+float g_rotateZ = 0.0f;
+
 GLuint cubeVAO = 0;
 GLuint cubeVBO = 0;
 GLuint cubeEBO = 0;
@@ -103,7 +107,7 @@ struct CubeInstance {
 // define quads
 vector<CubeInstance> cubeInstances = {
   //position,           scale,               rotation,           textureIndex
-  {{0.0f,  0.5f, 0.0f}, {1.0f, 1.0f, 1.0f},  {0.0f, 0.0f, 0.0f},  0}
+  {{0.0f,  0.5f, 0.0f}, {1.0f, 1.0f, 1.0f},  {8.0f, 3.0f, 3.0f},  0}
 };
 
 void setupQuad()
@@ -125,7 +129,7 @@ void setupQuad()
   glEnableVertexAttribArray(0);
 
   // texture coord loc=1
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat)));
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
   glEnableVertexAttribArray(1);
   
   glBindVertexArray(0);
@@ -155,13 +159,14 @@ void display()
   static const float darkGray[] = {0.2f, 0.2f, 0.2f, 1.0f};
   glClearColor(darkGray[0], darkGray[1], darkGray[2], darkGray[3]);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+  glEnable(GL_DEPTH_TEST);
+  
   //use shader program
   glUseProgram(shaderProgram);
 
   //create view matrix
   glm::mat4 view = glm::translate(glm::mat4(1.0f),
-				  glm::vec3(0.0f, -1.0f, -8.0f));
+				  glm::vec3(0.0f, 0.0f, -3.0f));
 
   //create perspective projection matrix
   float aspectRatio = (float)g_width / (float)g_height;
@@ -186,13 +191,17 @@ void display()
   static float time = 0.0f;
   time += 0.016; //60 FPS
 
+  cubeInstances[0].rotation.x = g_rotateX;
+  cubeInstances[0].rotation.y = g_rotateY;
+  cubeInstances[0].rotation.z = g_rotateZ;
+  
   for (size_t i = 0; i < cubeInstances.size(); i++)
     {
-      auto cube = cubeInstances[i];
+      auto& cube = cubeInstances[i];
 
-      if (i == 1)
+      if (i == 0)
 	{
-	  cube.rotation.y += time * 0.5;
+	  g_rotateY += 0.05;
 	}
       if (i == 4)
 	{
@@ -234,9 +243,17 @@ void display()
 void processInput(GLFWwindow* window)
 {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    {
-      glfwSetWindowShouldClose(window, true);
-    }
+    glfwSetWindowShouldClose(window, true);
+
+  if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+    g_rotateX += 1.0f;
+
+  if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS)
+    g_rotateY += 1.0f;
+
+  if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+    g_rotateZ += 1.0f;
+    
 }
 
 void cleanup()
