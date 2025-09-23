@@ -38,8 +38,8 @@ GLuint shaderProgram = 0;
 vector<GLuint> textures;
 vector<const char *> textureNames = {
   "../res/wall.jpg",
-  "../res/floor.jpg",
-  "../res/ceiling.jpg"
+  //"../res/floor.jpg",
+  //"../res/ceiling.jpg"
 };
 
 // cube vertices with texture coordinates
@@ -107,9 +107,9 @@ struct CubeInstance {
 // define quads
 vector<CubeInstance> cubeInstances = {
   //position,           scale,               rotation,           textureIndex
-  {{0.0f,  0.5f, 0.0f}, {1.0f, 1.0f, 1.0f},  {8.0f, 3.0f, 3.0f},  0},
-  {{0.5f,  -0.5f, 0.0f}, {0.5f, 0.5f, 0.5f},  {0.0f, 3.0f, 0.0f},  1},
-  {{-0.5f,  -0.5f, 0.0f}, {0.5f, 0.5f, 0.5f},  {0.0f, 0.0f, 0.0f},  2} 
+  {{0.0f,  0.5f, 0.0f}, {1.0f, 1.0f, 1.0f},  {8.0f, 3.0f, 3.0f},   0},
+  {{0.5f,  -0.5f, 0.0f}, {0.5f, 0.5f, 0.5f},  {0.0f, 3.0f, 0.0f},  0},
+  {{-0.5f,  -0.5f, 0.0f}, {0.5f, 0.5f, 0.5f},  {0.0f, 0.0f, 0.0f}, 0} 
 };
 
 void setupQuad()

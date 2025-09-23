@@ -1,7 +1,7 @@
 -Textures:
---https://www.freepik.com/
 --https://youtu.be/u-00hjlfMKc?si=s3aXCakOR7z-J8mW
 -GLM:
 --https://github.com/g-truc/glm
 
+(using another images, I didn't know copyright is a thing on random photos from the web lmbo)
 
