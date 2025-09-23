@@ -37,8 +37,8 @@ GLuint shaderProgram = 0;
 
 vector<GLuint> textures;
 vector<const char *> textureNames = {
-  "../res/wall.jpg",
-  //"../res/floor.jpg",
+  //"../res/wall.jpg",
+  "../res/floor.jpg",
   //"../res/ceiling.jpg"
 };
 

@@ -3,5 +3,9 @@
 -GLM:
 --https://github.com/g-truc/glm
 
-(using another images, I didn't know copyright is a thing on random photos from the web lmbo)
+It looks bad with this texture (~_~)
+I'll use the old one
+
+Texture from
+
 
