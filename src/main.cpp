@@ -107,7 +107,9 @@ struct CubeInstance {
 // define quads
 vector<CubeInstance> cubeInstances = {
   //position,           scale,               rotation,           textureIndex
-  {{0.0f,  0.5f, 0.0f}, {1.0f, 1.0f, 1.0f},  {8.0f, 3.0f, 3.0f},  0}
+  {{0.0f,  0.5f, 0.0f}, {1.0f, 1.0f, 1.0f},  {8.0f, 3.0f, 3.0f},  0},
+  {{0.5f,  -0.5f, 0.0f}, {0.5f, 0.5f, 0.5f},  {0.0f, 3.0f, 0.0f},  1},
+  {{-0.5f,  -0.5f, 0.0f}, {0.5f, 0.5f, 0.5f},  {0.0f, 0.0f, 0.0f},  2} 
 };
 
 void setupQuad()
@@ -203,10 +205,10 @@ void display()
 	{
 	  g_rotateY += 0.05;
 	}
-      if (i == 4)
+      if (i == 1 || i == 2)
 	{
-	  cube.rotation.x += time * 0.8f;
-	  cube.rotation.z += time * 1.2f;
+	  cube.rotation.x += 0.08f;
+	  cube.rotation.z += 0.02f;
 	}
 
       //create transformation matrix
