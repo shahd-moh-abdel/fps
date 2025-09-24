@@ -1,11 +1,8 @@
--Textures:
+Textures:
 --https://youtu.be/u-00hjlfMKc?si=s3aXCakOR7z-J8mW
--GLM:
+GLM:
 --https://github.com/g-truc/glm
 
-It looks bad with this texture (~_~)
-I'll use the old one
-
 Texture from
-
+--https://www.freepik.com/
 

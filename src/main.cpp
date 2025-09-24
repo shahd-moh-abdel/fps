@@ -26,9 +26,28 @@ using namespace std;
 int g_width = SCREEN_WIDTH;
 int g_height = SCREEN_HEIGHT;
 
+//camera
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+//cam rotation
+float yaw = -90.0f;
+float pitch = 0.0f;
+
+//mouse input
+bool firstMouse = true;
+float lastX = SCREEN_WIDTH / 2.0f;
+float lastY = SCREEN_HEIGHT / 2.0f;
+
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
+/*
 float g_rotateX = 0.0f;
 float g_rotateY = 0.0f;
 float g_rotateZ = 0.0f;
+*/
 
 GLuint cubeVAO = 0;
 GLuint cubeVBO = 0;
@@ -37,9 +56,9 @@ GLuint shaderProgram = 0;
 
 vector<GLuint> textures;
 vector<const char *> textureNames = {
-  //"../res/wall.jpg",
+  "../res/wall.jpg",
   "../res/floor.jpg",
-  //"../res/ceiling.jpg"
+  "../res/ceiling.jpg"
 };
 
 // cube vertices with texture coordinates
@@ -112,7 +131,37 @@ vector<CubeInstance> cubeInstances = {
   {{-0.5f,  -0.5f, 0.0f}, {0.5f, 0.5f, 0.5f},  {0.0f, 0.0f, 0.0f}, 0} 
 };
 
-void setupQuad()
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+  if (firstMouse)
+    {
+      lastX = xpos;
+      lastY = ypos;
+      firstMouse = false;
+    }
+
+  float xoffset = xpos - lastX;
+  float yoffset = lastY - ypos;
+
+  lastX = xpos;
+  lastY = ypos;
+
+  float sensitivity = 0.1f;
+  xoffset *= sensitivity;
+  yoffset *= sensitivity;
+
+  yaw += xoffset;
+  pitch += yoffset;
+
+  glm::vec3 front;
+  front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+  front.y = sin(glm::radians(pitch));
+  front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+
+  cameraFront = glm::normalize(front);
+}
+
+void setupCube()
 {
   //gen and bind vao and vbo
   glGenVertexArrays(1, &cubeVAO);
@@ -161,14 +210,12 @@ void display()
   static const float darkGray[] = {0.2f, 0.2f, 0.2f, 1.0f};
   glClearColor(darkGray[0], darkGray[1], darkGray[2], darkGray[3]);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glEnable(GL_DEPTH_TEST);
   
   //use shader program
   glUseProgram(shaderProgram);
 
   //create view matrix
-  glm::mat4 view = glm::translate(glm::mat4(1.0f),
-				  glm::vec3(0.0f, 0.0f, -3.0f));
+  glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
   //create perspective projection matrix
   float aspectRatio = (float)g_width / (float)g_height;
@@ -190,26 +237,9 @@ void display()
   glBindVertexArray(cubeVAO);
 
   //render cubes
-  static float time = 0.0f;
-  time += 0.016; //60 FPS
-
-  cubeInstances[0].rotation.x = g_rotateX;
-  cubeInstances[0].rotation.y = g_rotateY;
-  cubeInstances[0].rotation.z = g_rotateZ;
-  
   for (size_t i = 0; i < cubeInstances.size(); i++)
     {
       auto& cube = cubeInstances[i];
-
-      if (i == 0)
-	{
-	  g_rotateY += 0.05;
-	}
-      if (i == 1 || i == 2)
-	{
-	  cube.rotation.x += 0.08f;
-	  cube.rotation.z += 0.02f;
-	}
 
       //create transformation matrix
       glm::mat4 model = glm::mat4(1.0f);
@@ -247,15 +277,12 @@ void processInput(GLFWwindow* window)
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
 
-  if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
-    g_rotateX += 1.0f;
+  float cameraSpeed = 2.5f * deltaTime;
 
-  if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS)
-    g_rotateY += 1.0f;
-
-  if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
-    g_rotateZ += 1.0f;
-    
+  //wasd movement
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    cameraPos += cameraSpeed * cameraFront;
+  
 }
 
 void cleanup()
@@ -283,14 +310,22 @@ int main()
   GLFWwindow* window = initWindow(SCREEN_WIDTH, SCREEN_HEIGHT);
   if (!window) return -1;
 
-  setupQuad();
+  glEnable(GL_DEPTH_TEST);
+
+  glfwSetCursorPosCallback(window, mouse_callback);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); //hide cursor
+  
+  setupCube();
   setupShaders();
   setupTextures();
   
   while (!glfwWindowShouldClose(window))
     {
+      float currentFrame = glfwGetTime();
+      deltaTime = currentFrame - lastFrame;
+      lastFrame = currentFrame;
+      
       processInput(window);
-
       display();
       
       glfwSwapBuffers(window);
