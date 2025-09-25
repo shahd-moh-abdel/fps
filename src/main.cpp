@@ -15,7 +15,6 @@
 #include "../include/LoadShaders.h"
 #include "../include/initWindow.h"
 #include "../include/loadTexture.h"
-//#include "../include/Mat4.h"
 
 using namespace std;
 
@@ -43,22 +42,18 @@ float lastY = SCREEN_HEIGHT / 2.0f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-/*
-float g_rotateX = 0.0f;
-float g_rotateY = 0.0f;
-float g_rotateZ = 0.0f;
-*/
 
 GLuint cubeVAO = 0;
 GLuint cubeVBO = 0;
 GLuint cubeEBO = 0;
 GLuint shaderProgram = 0;
 
+
 vector<GLuint> textures;
 vector<const char *> textureNames = {
-  "../res/wall.jpg",
+  "../res/wall.png",
   "../res/floor.jpg",
-  "../res/ceiling.jpg"
+  "../res/ceiling_2.png"
 };
 
 // cube vertices with texture coordinates
@@ -144,7 +139,17 @@ vector<CubeInstance> cubeInstances = {
   {{ 0.0f,   0.0f,  3.0f}, {6.0f, 4.0f, 0.1f},  {0.0f , 0.0f, 0.0f},  0},
 
   //ceiling
-  {{ 0.0f,   2.0f,  0.0f}, {6.0f, 0.1f, 6.0f},  {0.0f , 0.0f, 0.0f},  2},
+  //{{ 0.0f,   2.0f,  0.0f}, {6.0f, 0.1f, 6.0f},  {0.0f , 0.0f, 0.0f},  2},
+  {{-2.0f,   2.0f, -2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
+  {{ 0.0f,   2.0f, -2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
+  {{ 2.0f,   2.0f, -2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
+  {{-2.0f,   2.0f,  0.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
+  {{ 0.0f,   2.0f,  0.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
+  {{ 2.0f,   2.0f,  0.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
+  {{-2.0f,   2.0f,  2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
+  {{ 0.0f,   2.0f,  2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
+  {{ 2.0f,   2.0f,  2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
+
 };
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
@@ -168,6 +173,12 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
   yaw += xoffset;
   pitch += yoffset;
+
+  //constrain pitch
+  if (pitch > 89.0f)
+    pitch = 89.0f;
+  if (pitch < -89.0)
+    pitch = -89.0f;
 
   glm::vec3 front;
   front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
