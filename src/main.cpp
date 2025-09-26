@@ -45,7 +45,6 @@ float lastFrame = 0.0f;
 
 GLuint cubeVAO = 0;
 GLuint cubeVBO = 0;
-GLuint cubeEBO = 0;
 GLuint shaderProgram = 0;
 
 
@@ -59,56 +58,55 @@ vector<const char *> textureNames = {
 // cube vertices with texture coordinates
 const GLuint NumVertices = 36;
 
-// (x, y, z)-position, (u, v)-texture coordinates 
-static const GLfloat cubeVertices[NumVertices * 5] = {
+// (x, y, z)-position, (u, v)-texture coordinates, normals 
+static const GLfloat cubeVertices[NumVertices * 8] = {
   //front
-  -0.5f, -0.5f, 0.5f,   0.0f, 0.0f,
-   0.5f, -0.5f, 0.5f,   1.0f, 0.0f,
-   0.5f,  0.5f, 0.5f,   1.0f, 1.0f,
-   0.5f,  0.5f, 0.5f,   1.0f, 1.0f,
-  -0.5f,  0.5f, 0.5f,   0.0f, 1.0f,
-  -0.5f, -0.5f, 0.5f,   0.0f, 0.0f,
+  -0.5f, -0.5f, 0.5f,   0.0f, 0.0f,         0.0f, 0.0f, 1.0f,
+   0.5f, -0.5f, 0.5f,   1.0f, 0.0f,         0.0f, 0.0f, 1.0f,
+   0.5f,  0.5f, 0.5f,   1.0f, 1.0f,         0.0f, 0.0f, 1.0f, 
+   0.5f,  0.5f, 0.5f,   1.0f, 1.0f,         0.0f, 0.0f, 1.0f,
+  -0.5f,  0.5f, 0.5f,   0.0f, 1.0f,         0.0f, 0.0f, 1.0f,
+  -0.5f, -0.5f, 0.5f,   0.0f, 0.0f,         0.0f, 0.0f, 1.0f,
 
   //back
-  -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-   0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-   0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-   0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-  -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-  -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+  -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,         0.0f, 0.0f, -1.0f,
+   0.5f, -0.5f, -0.5f,  1.0f, 0.0f,         0.0f, 0.0f, -1.0f,
+   0.5f,  0.5f, -0.5f,  1.0f, 1.0f,         0.0f, 0.0f, -1.0f,
+   0.5f,  0.5f, -0.5f,  1.0f, 1.0f,         0.0f, 0.0f, -1.0f,
+  -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,         0.0f, 0.0f, -1.0f,
+  -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,         0.0f, 0.0f, -1.0f,
 
   //left
-  -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-  -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-  -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-  -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,         -1.0f, 0.0f, 0.0f,
+  -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,         -1.0f, 0.0f, 0.0f,
+  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,         -1.0f, 0.0f, 0.0f,
+  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,         -1.0f, 0.0f, 0.0f,
+  -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,         -1.0f, 0.0f, 0.0f,
+  -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,         -1.0f, 0.0f, 0.0f,
 
   //right
-  0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-  0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-  0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-  0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-  0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-  0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  0.5f,  0.5f,  0.5f,  1.0f, 0.0f,          1.0f, 0.0f, 0.0f,
+  0.5f,  0.5f, -0.5f,  1.0f, 1.0f,          1.0f, 0.0f, 0.0f,  
+  0.5f, -0.5f, -0.5f,  0.0f, 1.0f,          1.0f, 0.0f, 0.0f,
+  0.5f, -0.5f, -0.5f,  0.0f, 1.0f,          1.0f, 0.0f, 0.0f,
+  0.5f, -0.5f,  0.5f,  0.0f, 0.0f,          1.0f, 0.0f, 0.0f,
+  0.5f,  0.5f,  0.5f,  1.0f, 0.0f,          1.0f, 0.0f, 0.0f,
 
   //bottom
-  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-   0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-   0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-   0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-  -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,         0.0f, -1.0f, 0.0f,
+  +0.5f, -0.5f, -0.5f,  1.0f, 1.0f,         0.0f, -1.0f, 0.0f,
+  +0.5f, -0.5f,  0.5f,  1.0f, 0.0f,         0.0f, -1.0f, 0.0f,
+  +0.5f, -0.5f,  0.5f,  1.0f, 0.0f,         0.0f, -1.0f, 0.0f,
+  -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,         0.0f, -1.0f, 0.0f,
+  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,         0.0f, -1.0f, 0.0f,
 
   //top
-  
-  -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-   0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-   0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-   0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-  -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-  -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+  -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,         0.0f, 1.0f, 0.0f,
+   0.5f,  0.5f, -0.5f,  1.0f, 1.0f,         0.0f, 1.0f, 0.0f,
+   0.5f,  0.5f,  0.5f,  1.0f, 0.0f,         0.0f, 1.0f, 0.0f, 
+   0.5f,  0.5f,  0.5f,  1.0f, 0.0f,         0.0f, 1.0f, 0.0f,
+  -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,         0.0f, 1.0f, 0.0f,
+  -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,         0.0f, 1.0f, 0.0f
 };
 
 struct CubeInstance {
@@ -138,6 +136,8 @@ vector<CubeInstance> cubeInstances = {
   {{ 0.0f,   0.0f, -3.0f}, {6.0f, 4.0f, 0.1f},  {0.0f , 0.0f, 0.0f},  0},
   {{ 0.0f,   0.0f,  3.0f}, {6.0f, 4.0f, 0.1f},  {0.0f , 0.0f, 0.0f},  0},
 
+  {{0.0f,    0.0f,  0.0f}, {1.0f, 1.0f, 1.0f},  {0.0f, 0.0f, 0.0f}, 2},
+  
   //ceiling
   //{{ 0.0f,   2.0f,  0.0f}, {6.0f, 0.1f, 6.0f},  {0.0f , 0.0f, 0.0f},  2},
   {{-2.0f,   2.0f, -2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
@@ -193,7 +193,6 @@ void setupCube()
   //gen and bind vao and vbo
   glGenVertexArrays(1, &cubeVAO);
   glGenBuffers(1, &cubeVBO);
-  glGenBuffers(1, &cubeEBO);
 
   // bind vao first
   glBindVertexArray(cubeVAO);
@@ -203,12 +202,16 @@ void setupCube()
   glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
 
   //setup vertex attrib
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);
   glEnableVertexAttribArray(0);
 
   // texture coord loc=1
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
   glEnableVertexAttribArray(1);
+  
+  //normal attrib for light
+  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(5 * sizeof(GLfloat)));
+  glEnableVertexAttribArray(2);
   
   glBindVertexArray(0);
 }
@@ -234,7 +237,7 @@ void setupTextures()
 void display()
 {
   //clear screen
-  static const float darkGray[] = {0.2f, 0.2f, 0.2f, 1.0f};
+  static const float darkGray[] = {0.05f, 0.05f, 0.1f, 1.0f};
   glClearColor(darkGray[0], darkGray[1], darkGray[2], darkGray[3]);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
@@ -257,9 +260,31 @@ void display()
   GLint projectionLocation = glGetUniformLocation(shaderProgram, "u_projection");
   GLint textureLocation = glGetUniformLocation(shaderProgram, "u_texture");
 
+  //light
+  GLint lightPosLocation = glGetUniformLocation(shaderProgram, "u_lightPos");
+  GLint lightColorLocation = glGetUniformLocation(shaderProgram, "u_lightColor");
+  GLint viewPosLocation = glGetUniformLocation(shaderProgram, "u_viewPos");
+
+  
   //send view and projection matrices
   glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
   glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
+
+  static float lightTime = 0.0f;
+  lightTime += deltaTime;
+
+  //moving light source
+  glm::vec3 lightPos = glm::vec3(
+				 sin(lightTime * 0.5f) * 2.0f,
+				 1.0f + sin(lightTime * 0.7f) * 1.0f,
+				 cos(lightTime * 0.5f) * 2.0f
+				 );
+
+  glm::vec3 lightColor = glm::vec3(1.0f, 0.95f, 0.8f);
+
+  glUniform3fv(lightPosLocation, 1, glm::value_ptr(lightPos));
+  glUniform3fv(lightColorLocation, 1, glm::value_ptr(lightColor));
+  glUniform3fv(viewPosLocation, 1, glm::value_ptr(cameraPos));
 
   glBindVertexArray(cubeVAO);
 

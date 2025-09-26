@@ -3,6 +3,6 @@ Textures:
 GLM:
 --https://github.com/g-truc/glm
 
-Texture from
---https://www.freepik.com/
+Lights
+-https://www.lighthouse3d.com/tutorials/glsl-tutorial/lighting/
 
