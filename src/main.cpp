@@ -26,7 +26,7 @@ int g_width = SCREEN_WIDTH;
 int g_height = SCREEN_HEIGHT;
 
 //camera
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraPos = glm::vec3(3.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -42,17 +42,39 @@ float lastY = SCREEN_HEIGHT / 2.0f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-
 GLuint cubeVAO = 0;
 GLuint cubeVBO = 0;
 GLuint shaderProgram = 0;
 
-
 vector<GLuint> textures;
 vector<const char *> textureNames = {
-  "../res/wall.png",
+  "../res/walal.png",
   "../res/floor.jpg",
   "../res/ceiling_2.png"
+};
+
+//world grid consts
+
+const int WORLD_SIZE = 12;
+const float CELL_SIZE = 3.0f;
+const float WALL_HEIGHT = 6.0f;
+
+enum CellType { EMPTY = 0, WALL = 1, PILLAR = 2 };
+
+int world[WORLD_SIZE][WORLD_SIZE] = {
+  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+  
 };
 
 // cube vertices with texture coordinates
@@ -109,47 +131,10 @@ static const GLfloat cubeVertices[NumVertices * 8] = {
   -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,         0.0f, 1.0f, 0.0f
 };
 
-struct CubeInstance {
-  glm::vec3 position;
-  glm::vec3 scale;
-  glm::vec3 rotation;
+struct RenderBatch {
+  string name;
+  vector<glm::mat4> transforms;
   int textureIndex;
-};
-
-// define quads
-vector<CubeInstance> cubeInstances = {
-  //position,              scale,               rotation,           textureIndex
-  {{-2.0f,  -2.0f, -2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  1},
-  {{ 0.0f,  -2.0f, -2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  1},
-  {{ 2.0f,  -2.0f, -2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  1},
-  {{-2.0f,  -2.0f,  0.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  1},
-  {{ 0.0f,  -2.0f,  0.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  1},
-  {{ 2.0f,  -2.0f,  0.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  1},
-  {{-2.0f,  -2.0f,  2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  1},
-  {{ 0.0f,  -2.0f,  2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  1},
-  {{ 2.0f,  -2.0f,  2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  1},
-
-
-  //walls
-  {{-3.0f,   0.0f,  0.0f}, {0.1f, 6.0f, 4.0f},  {glm::radians(90.0f), 0.0f, 0.0f},  0}, 
-  {{ 3.0f,   0.0f,  0.0f}, {0.1f, 6.0f, 4.0f},  {glm::radians(90.0f), 0.0f, 0.0f},  0},
-  {{ 0.0f,   0.0f, -3.0f}, {6.0f, 4.0f, 0.1f},  {0.0f , 0.0f, 0.0f},  0},
-  {{ 0.0f,   0.0f,  3.0f}, {6.0f, 4.0f, 0.1f},  {0.0f , 0.0f, 0.0f},  0},
-
-  {{0.0f,    0.0f,  0.0f}, {1.0f, 1.0f, 1.0f},  {0.0f, 0.0f, 0.0f}, 2},
-  
-  //ceiling
-  //{{ 0.0f,   2.0f,  0.0f}, {6.0f, 0.1f, 6.0f},  {0.0f , 0.0f, 0.0f},  2},
-  {{-2.0f,   2.0f, -2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
-  {{ 0.0f,   2.0f, -2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
-  {{ 2.0f,   2.0f, -2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
-  {{-2.0f,   2.0f,  0.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
-  {{ 0.0f,   2.0f,  0.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
-  {{ 2.0f,   2.0f,  0.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
-  {{-2.0f,   2.0f,  2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
-  {{ 0.0f,   2.0f,  2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
-  {{ 2.0f,   2.0f,  2.0f}, {2.0f, 0.1f, 2.0f},  {0.0f, 0.0f, 0.0f},  2},
-
 };
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
@@ -187,6 +172,96 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
   cameraFront = glm::normalize(front);
 }
+
+glm::vec3 gridToWorldPos(int x, int z, float y = 0.0f)
+{
+  return glm::vec3(x * CELL_SIZE, y, z * CELL_SIZE);
+}
+
+bool isSolid(int x, int z)
+{
+  if (x < 0 || x >= WORLD_SIZE || z < 0 || z >= WORLD_SIZE)
+    return true;
+
+  return world[z][x] != EMPTY;
+}
+
+CellType getCellType(int x, int z)
+{
+  if (x < 0 || x >= WORLD_SIZE || z < 0 || z >= WORLD_SIZE)
+    return WALL;
+
+  return (CellType)world[z][x];
+}
+
+void buildWorldGeometry(vector<RenderBatch>& batches)
+{
+  batches.clear();
+  batches.resize(3);
+
+  batches[0] = {"Walls", {}, 0};
+  batches[1] = {"Floors", {}, 1};
+  batches[2] = {"Ceilings", {}, 2};
+
+  int wallCount = 0, floorCount = 0, ceilingCount = 0;
+
+  for (int x = 0; x < WORLD_SIZE; x++)
+    {
+      for (int z = 0; z < WORLD_SIZE; z++)
+	{
+	  CellType cellType  = getCellType(x, z);
+	  glm::vec3 pos = gridToWorldPos(x, z);
+
+	  if (cellType == WALL)
+	    {
+	      glm::mat4 wallTransform = glm::mat4(1.0f);
+	      
+	      wallTransform = glm::translate(wallTransform,
+					   pos + glm::vec3(0.0f, WALL_HEIGHT/2.0f ,0.0f));
+	      wallTransform = glm::scale(wallTransform,
+					   glm::vec3(CELL_SIZE, WALL_HEIGHT * 2.0f, CELL_SIZE));
+	      
+	      batches[0].transforms.push_back(wallTransform);
+	      wallCount++;
+	    }
+	  else if (cellType == PILLAR)
+	    {
+	      glm::mat4 pillarTransform = glm::mat4(1.0f);
+	      pillarTransform = glm::translate(pillarTransform,
+					       pos + glm::vec3(0.0f, WALL_HEIGHT/2.0f, 0.0f));
+	      pillarTransform = glm::scale(pillarTransform,
+					       glm::vec3(CELL_SIZE * 0.6f, WALL_HEIGHT * 2.0f, CELL_SIZE * 0.6f));
+
+	      batches[0].transforms.push_back(pillarTransform);
+	      wallCount++;                        		       
+	    }
+
+	  if (cellType != WALL)
+	    {
+	      glm::mat4 floorTransform = glm::mat4(1.0f);
+	      floorTransform = glm::translate(floorTransform,
+					      pos + glm::vec3(0.0f, -WALL_HEIGHT/2.0f, 0.0f));
+	      floorTransform = glm::scale(floorTransform,
+					  glm::vec3(CELL_SIZE, 0.2f, CELL_SIZE));
+
+	      batches[1].transforms.push_back(floorTransform);
+	      floorCount++;
+
+	      glm::mat4 ceilingTransform = glm::mat4(1.0f);
+	      ceilingTransform = glm::translate(ceilingTransform,
+						pos + glm::vec3(0.0f, WALL_HEIGHT + WALL_HEIGHT/2.0f, 0.0));
+	      ceilingTransform = glm::scale(ceilingTransform,
+					    glm::vec3(CELL_SIZE, 0.2f, CELL_SIZE));
+	      batches[2].transforms.push_back(ceilingTransform);
+	      ceilingCount++;		       		  
+	    }
+	}
+    }
+
+  cout << "world built" << endl;
+  
+}
+
 
 void setupCube()
 {
@@ -274,12 +349,7 @@ void display()
   lightTime += deltaTime;
 
   //moving light source
-  glm::vec3 lightPos = glm::vec3(
-				 sin(lightTime * 0.5f) * 2.0f,
-				 1.0f + sin(lightTime * 0.7f) * 1.0f,
-				 cos(lightTime * 0.5f) * 2.0f
-				 );
-
+  glm::vec3 lightPos = cameraPos + glm::vec3(0.0f, 2.0f, 0.0f);
   glm::vec3 lightColor = glm::vec3(1.0f, 0.95f, 0.8f);
 
   glUniform3fv(lightPosLocation, 1, glm::value_ptr(lightPos));
@@ -288,48 +358,42 @@ void display()
 
   glBindVertexArray(cubeVAO);
 
-  //render cubes
-  for (size_t i = 0; i < cubeInstances.size(); i++)
+  static vector<RenderBatch> worldBatches;
+  static bool worldBuilt = false;
+
+  if (!worldBuilt)
     {
-      auto& cube = cubeInstances[i];
-
-      //create transformation matrix
-      glm::mat4 model = glm::mat4(1.0f);
-
-      //apply transformation translate, rotate, scale
-      model = glm::translate(model, cube.position);
-      model = glm::rotate(model,
-			  cube.rotation.y,
-			  glm::vec3(0.0f, 1.0f, 0.0f));
-      model = glm::rotate(model,
-			  cube.rotation.x,
-			  glm::vec3(1.0f, 0.0f, 0.0f));
-      model = glm::rotate(model,
-			  cube.rotation.z,
-			  glm::vec3(0.0f, 0.0f, 1.0f));
-      model = glm::scale(model, cube.scale);
-
-      //send model to shader
-      glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
-
-      //bind texture
-      glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, textures[cube.textureIndex]);
-      glUniform1i(textureLocation, 0);
-
-      glDrawArrays(GL_TRIANGLES, 0, NumVertices);
-			
+      buildWorldGeometry(worldBatches);
+      worldBuilt = true;
     }
- 
+  
+  //render batches
+  for (const auto& batch : worldBatches)
+    {
+      if (batch.textureIndex < textures.size() && !batch.transforms.empty())
+	{     
+	  //bind texture
+	  glActiveTexture(GL_TEXTURE0);
+	  glBindTexture(GL_TEXTURE_2D, textures[batch.textureIndex]);
+	  glUniform1i(textureLocation, 0);
+	}
+      for (const auto& transform : batch.transforms)
+	{
+	  glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(transform));
+	  glDrawArrays(GL_TRIANGLES, 0, NumVertices);
+	}		
+    }
+  
   glBindVertexArray(0);
 }
+
 
 void processInput(GLFWwindow* window)
 {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
 
-  float cameraSpeed = 1.5f * deltaTime;
+  float cameraSpeed =  20.5f * deltaTime;
 
   //wasd movement
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
