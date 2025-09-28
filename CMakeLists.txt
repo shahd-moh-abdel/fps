@@ -8,6 +8,7 @@ add_executable(fps
 		src/initWindow.cpp
 		src/loadTexture.cpp
 		src/Camera.cpp
+		src/World.cpp
 		glad.c)
 
 find_package(glfw3 3.3 REQUIRED)

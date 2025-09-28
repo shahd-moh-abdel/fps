@@ -30,6 +30,10 @@ class World {
 
   bool isPositionSolid(vec3 position) const;
 
+  vec3 gridToWorldPos(int x,
+		      int z,
+		      float y = 0.0f) const;
+  
   static constexpr int getWorldSize()
   { return WORLD_SIZE; }
 
@@ -45,6 +49,9 @@ class World {
   static constexpr float WALL_HEIGHT = 6.0f;
 
   int worldData[WORLD_SIZE][WORLD_SIZE];
+
+  bool isSolid(int x, int z) const;
+  CellType getCellType(int x, int z) const;
 };
 
 #endif

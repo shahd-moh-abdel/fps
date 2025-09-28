@@ -117,6 +117,10 @@ void World::buildGeometry(std::vector<RenderBatch>& batches)
 
 	      glm::mat4 ceilingTransform = glm::mat4(1.0f);
 	      ceilingTransform = glm::translate(ceilingTransform,
+						pos + glm::vec3(0.0f,
+								WALL_HEIGHT + WALL_HEIGHT/2.0f ,
+								0.0f));
+	      ceilingTransform = glm::scale(ceilingTransform,
 						glm::vec3(CELL_SIZE, 0.2f, CELL_SIZE));
 	      batches[2].transforms.push_back(ceilingTransform);
 	      ceilingCount++;

@@ -16,6 +16,7 @@
 #include "../include/initWindow.h"
 #include "../include/loadTexture.h"
 #include "../include/Camera.h"
+#include "../include/World.h"
 
 using namespace std;
 
@@ -28,6 +29,7 @@ int g_height = SCREEN_HEIGHT;
 
 //camera
 Camera camera(glm::vec3(3.0f, 0.0f, 3.0f));
+World world;
 
 //mouse input
 bool firstMouse = true;
@@ -46,40 +48,6 @@ vector<const char *> textureNames = {
   "../res/wall.png",
   "../res/floor.jpg",
   "../res/ceiling_2.png"
-};
-
-//world grid consts
-const int WORLD_SIZE = 24;
-const float CELL_SIZE = 3.0f;
-const float WALL_HEIGHT = 6.0f;
-
-enum CellType { EMPTY = 0, WALL = 1, PILLAR = 2 };
-
-int world[WORLD_SIZE][WORLD_SIZE] = {
-  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 };
 
 // cube vertices with texture coordinates
@@ -136,12 +104,6 @@ static const GLfloat cubeVertices[NumVertices * 8] = {
   -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,         0.0f, 1.0f, 0.0f
 };
 
-struct RenderBatch {
-  string name;
-  vector<glm::mat4> transforms;
-  int textureIndex;
-};
-
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
   if (firstMouse)
@@ -159,93 +121,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
   camera.processMouseMovement(xoffset, yoffset);
 }
-
-glm::vec3 gridToWorldPos(int x, int z, float y = 0.0f)
-{
-  return glm::vec3(x * CELL_SIZE, y, z * CELL_SIZE);
-}
-
-bool isSolid(int x, int z)
-{
-  if (x < 0 || x >= WORLD_SIZE || z < 0 || z >= WORLD_SIZE)
-    return true;
-
-  return world[z][x] != EMPTY;
-}
-
-CellType getCellType(int x, int z)
-{
-  if (x < 0 || x >= WORLD_SIZE || z < 0 || z >= WORLD_SIZE)
-    return WALL;
-
-  return (CellType)world[z][x];
-}
-
-void buildWorldGeometry(vector<RenderBatch>& batches)
-{
-  batches.clear();
-  batches.resize(3);
-
-  batches[0] = {"Walls", {}, 0};
-  batches[1] = {"Floors", {}, 1};
-  batches[2] = {"Ceilings", {}, 2};
-
-  int wallCount = 0, floorCount = 0, ceilingCount = 0;
-
-  for (int x = 0; x < WORLD_SIZE; x++)
-    {
-      for (int z = 0; z < WORLD_SIZE; z++)
-	{
-	  CellType cellType  = getCellType(x, z);
-	  glm::vec3 pos = gridToWorldPos(x, z);
-
-	  if (cellType == WALL)
-	    {
-	      glm::mat4 wallTransform = glm::mat4(1.0f);
-	      
-	      wallTransform = glm::translate(wallTransform,
-					   pos + glm::vec3(0.0f, WALL_HEIGHT/2.0f ,0.0f));
-	      wallTransform = glm::scale(wallTransform,
-					   glm::vec3(CELL_SIZE, WALL_HEIGHT * 2.0f, CELL_SIZE));
-	      
-	      batches[0].transforms.push_back(wallTransform);
-	      wallCount++;
-	    }
-	  else if (cellType == PILLAR)
-	    {
-	      glm::mat4 pillarTransform = glm::mat4(1.0f);
-	      pillarTransform = glm::translate(pillarTransform,
-					       pos + glm::vec3(0.0f, WALL_HEIGHT/2.0f, 0.0f));
-	      pillarTransform = glm::scale(pillarTransform,
-					       glm::vec3(CELL_SIZE * 0.6f, WALL_HEIGHT * 2.0f, CELL_SIZE * 0.6f));
-
-	      batches[0].transforms.push_back(pillarTransform);
-	      wallCount++;                        		       
-	    }
-
-	  if (cellType != WALL)
-	    {
-	      glm::mat4 floorTransform = glm::mat4(1.0f);
-	      floorTransform = glm::translate(floorTransform,
-					      pos + glm::vec3(0.0f, -WALL_HEIGHT/2.0f, 0.0f));
-	      floorTransform = glm::scale(floorTransform,
-					  glm::vec3(CELL_SIZE, 0.2f, CELL_SIZE));
-
-	      batches[1].transforms.push_back(floorTransform);
-	      floorCount++;
-
-	      glm::mat4 ceilingTransform = glm::mat4(1.0f);
-	      ceilingTransform = glm::translate(ceilingTransform,
-						pos + glm::vec3(0.0f, WALL_HEIGHT + WALL_HEIGHT/2.0f, 0.0));
-	      ceilingTransform = glm::scale(ceilingTransform,
-					    glm::vec3(CELL_SIZE, 0.2f, CELL_SIZE));
-	      batches[2].transforms.push_back(ceilingTransform);
-	      ceilingCount++;		       		  
-	    }
-	}
-    }  
-}
-
 
 void setupCube()
 {
@@ -345,7 +220,7 @@ void display()
 
   if (!worldBuilt)
     {
-      buildWorldGeometry(worldBatches);
+      world.buildGeometry(worldBatches);
       worldBuilt = true;
     }
   
@@ -371,10 +246,7 @@ void display()
 
 bool checkCollision(glm::vec3 newPos)
 {
-  int gridX = (int)floor((newPos.x + CELL_SIZE/2.0f) / CELL_SIZE);
-  int gridY = (int)floor((newPos.z + CELL_SIZE/2.0f) / CELL_SIZE);
-
-  return isSolid(gridX, gridY);
+  return world.isPositionSolid(newPos);
 }
 
 void processInput(GLFWwindow* window)
