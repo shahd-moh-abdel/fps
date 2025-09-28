@@ -25,12 +25,23 @@ class Camera {
   glm::vec3 getFront() const { return front; }
   glm::vec3 getUp() const { return up; }
   glm::vec3 getRight() const { return right; }
+
+  void  setPosition(const glm::vec3& pos)
+  { position = pos;}
+
+  enum Movement {
+    FORWARD,
+    BACKWARD,
+    LEFT,
+    RIGHT
+  };
   
  private:
   glm::vec3 position;
   glm::vec3 front;
   glm::vec3 up;
   glm::vec3 right;
+  glm::vec3 worldUp;
 
   float yaw;
   float pitch;
