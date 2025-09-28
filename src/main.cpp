@@ -31,7 +31,7 @@ glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 //cam rotation
-float yaw = -90.0f;
+float yaw =  90.0f;
 float pitch = 0.0f;
 
 //mouse input
@@ -48,33 +48,44 @@ GLuint shaderProgram = 0;
 
 vector<GLuint> textures;
 vector<const char *> textureNames = {
-  "../res/walal.png",
+  "../res/wall.png",
   "../res/floor.jpg",
   "../res/ceiling_2.png"
 };
 
 //world grid consts
 
-const int WORLD_SIZE = 12;
+const int WORLD_SIZE = 24;
 const float CELL_SIZE = 3.0f;
 const float WALL_HEIGHT = 6.0f;
 
 enum CellType { EMPTY = 0, WALL = 1, PILLAR = 2 };
 
 int world[WORLD_SIZE][WORLD_SIZE] = {
-  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-  
+  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 };
 
 // cube vertices with texture coordinates
@@ -387,30 +398,70 @@ void display()
   glBindVertexArray(0);
 }
 
+bool checkCollision(glm::vec3 newPos)
+{
+  int gridX = (int)floor((newPos.x + CELL_SIZE/2.0f) / CELL_SIZE);
+  int gridY = (int)floor((newPos.z + CELL_SIZE/2.0f) / CELL_SIZE);
+
+  return isSolid(gridX, gridY);
+}
 
 void processInput(GLFWwindow* window)
 {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
 
-  float cameraSpeed =  20.5f * deltaTime;
-
+  float cameraSpeed =  10.0f * deltaTime;
+  glm::vec3 newPos = cameraPos;
+  
   //wasd movement
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    cameraPos += cameraSpeed * cameraFront;
-  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    cameraPos -= cameraSpeed * cameraFront;
-  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-
-  //q/e up and down
-  if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-    cameraPos -= cameraUp * cameraSpeed;
-  if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-    cameraPos += cameraUp * cameraSpeed;
+    {
+      //no flying
+      glm::vec3 forward = glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z));
+      
+      newPos = cameraPos + cameraSpeed  * forward;
+      if (!checkCollision(newPos))
+	{
+	  cameraPos.x = newPos.x;
+	  cameraPos.z = newPos.z;
+	}
+    }
   
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+      glm::vec3 forward = glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z));
+      
+      newPos = cameraPos - cameraSpeed * forward;
+      if (!checkCollision(newPos))
+	{
+	  cameraPos.x = newPos.x;
+	  cameraPos.z = newPos.z;
+	}
+    }
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+      glm::vec3 right = glm::normalize(glm::cross(cameraFront, cameraUp));
+      glm::vec3 left = glm::normalize(glm::vec3(-right.x, 0.0f, -right.z));
+      newPos = cameraPos + cameraSpeed * left;
+      if (!checkCollision(newPos))
+	{
+	  cameraPos.x = newPos.x;
+	  cameraPos.z = newPos.z;
+	}
+    }
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+      glm::vec3 right = glm::normalize(glm::cross(cameraFront, cameraUp));
+      glm::vec3 rightMove = glm::normalize(glm::vec3(right.x, 0.0f, right.z));
+      newPos = cameraPos + cameraSpeed * rightMove;
+
+      if (!checkCollision(newPos))
+	{
+	  cameraPos.x = newPos.x;
+	  cameraPos.z = newPos.z;
+	}
+    }
 }
 
 void cleanup()
