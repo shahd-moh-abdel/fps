@@ -3,6 +3,7 @@
 
 #include "glm/fwd.hpp"
 #include "glm/glm.hpp"
+#include "../include/Level.h"
 #include "glm/gtc/matrix_transform.hpp"
 #include <vector>
 #include <string>
@@ -10,11 +11,8 @@
 using namespace std;
 using namespace glm;
 
-enum CellType {
-  EMPTY = 0,
-  WALL = 1,
-  PILLAR = 2
-};
+const float CELL_SIZE = 2.0f;
+const float WALL_HEIGHT = 3.0f;
 
 struct RenderBatch {
   string name;
@@ -26,32 +24,23 @@ class World {
  public:
   World();
 
+  bool loadLevel(const std::string& filename);
+  void setLevel(const Level& level);
+  const Level& getCurrentLevel() const { return currentLevel; }
+  
   void buildGeometry(vector<RenderBatch>& batches);
 
   bool isPositionSolid(vec3 position) const;
-
-  vec3 gridToWorldPos(int x,
-		      int z,
-		      float y = 0.0f) const;
-  
-  static constexpr int getWorldSize()
-  { return WORLD_SIZE; }
-
-  static constexpr float getCellSize()
-  { return CELL_SIZE; }
-
-  static constexpr float getWallHeight()
-  { return WALL_HEIGHT; }
-    
- private:
-  static const int WORLD_SIZE = 24;
-  static constexpr float CELL_SIZE = 3.0f;
-  static constexpr float WALL_HEIGHT = 6.0f;
-
-  int worldData[WORLD_SIZE][WORLD_SIZE];
-
+  vec3 gridToWorldPos(int x, int z, float y = 0.0f) const;
   bool isSolid(int x, int z) const;
   CellType getCellType(int x, int z) const;
+
+  void printCurrentLevel() const;
+    
+ private:
+  Level currentLevel;
+  bool levelLoaded;
+
 };
 
 #endif

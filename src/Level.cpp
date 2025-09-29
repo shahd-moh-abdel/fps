@@ -103,13 +103,6 @@ bool loadLevel(const std::string& filename, Level& level)
 
   level.name = filename;
 
-  printLevel(level);
- 
   return true;
 }
 
-int main()
-{
-  Level level;
-  loadLevel("../levels/level.txt", level);
-}

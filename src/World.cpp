@@ -1,40 +1,28 @@
 #include "../include/World.h"
+#include "../include/Level.h"
 #include <iostream>
 #include <cmath>
 
 World::World()
 {
   //init world data
-  int tempWorld[WORLD_SIZE][WORLD_SIZE] = {
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-  };
+  loadLevel("../levels/level.txt");
+}
 
-  for (int i = 0; i < WORLD_SIZE; i++)
-      for (int j = 0; j < WORLD_SIZE; j++)
-	worldData[i][j] = tempWorld[i][j];
+bool World::loadLevel(const std::string& filename)
+{
+  if (::loadLevel(filename, currentLevel))
+    {
+      levelLoaded = true;
+      return true;
+    }
+  return false;
+}
+
+void World::setLevel(const Level& level)
+{
+  currentLevel = level;
+  levelLoaded = true;
 }
 
 glm::vec3 World::gridToWorldPos(int x, int z, float y) const
@@ -44,25 +32,26 @@ glm::vec3 World::gridToWorldPos(int x, int z, float y) const
 
 bool World::isSolid(int x, int z) const
 {
-  if (x < 0 || x >= WORLD_SIZE || z < 0 || z >= WORLD_SIZE)
+  if (x < 0 || x >= currentLevel.width || z < 0 || z >= currentLevel.height)
     return true;
 
-  return worldData[z][x] != EMPTY;
+  CellType cell = currentLevel.grid[z][x];
+  return cell == WALL || cell == PILLAR;
 }
 
 CellType World::getCellType(int x, int z) const
 {
-  if (x < 0 || x >= WORLD_SIZE || z < 0 || z >= WORLD_SIZE)
+  if (!levelLoaded) return WALL;
+  if (x < 0 || x >= currentLevel.width || z < 0 || z >= currentLevel.height)
     return WALL;
 
-  return (CellType)worldData[z][x];
+  return currentLevel.grid[z][x];
 }
 
 bool World::isPositionSolid(glm::vec3 position) const
 {
   int gridX = (int)floor((position.x + CELL_SIZE/2.0f) / CELL_SIZE);
   int gridZ = (int)floor((position.z + CELL_SIZE/2.0f) / CELL_SIZE);
-
   return isSolid(gridX, gridZ);
 }
 
@@ -77,9 +66,9 @@ void World::buildGeometry(std::vector<RenderBatch>& batches)
 
   int wallCount = 0, floorCount = 0, ceilingCount = 0;
 
-  for (int x = 0; x < WORLD_SIZE; x++)
+  for (int x = 0; x < currentLevel.width; x++)
     {
-      for (int z = 0; z < WORLD_SIZE; z++)
+      for (int z = 0; z < currentLevel.height; z++)
 	{
 	  CellType cellType = getCellType(x, z);
 	  glm::vec3 pos = gridToWorldPos(x, z);
@@ -127,4 +116,14 @@ void World::buildGeometry(std::vector<RenderBatch>& batches)
 	    }
 	}
     }
+}
+
+void World::printCurrentLevel() const
+{
+  if (levelLoaded)
+    {
+      std::cout << "level loaded" << std::endl;
+    }
+  else
+    std::cout << "no level" << std::endl;
 }
