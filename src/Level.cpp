@@ -25,7 +25,8 @@ char cellToChar(CellType cell) {
     case EMPTY: return '.';
     case WALL: return '#';
     case PILLAR: return 'P';
-    default: return '#';
+    case SPAWN: return 'S';
+    default: return '?';
     }
 }
 
@@ -94,6 +95,8 @@ bool loadLevel(const std::string& filename, Level& level)
 
 	  if (cellType == SPAWN)
 	    {
+	      level.spawnPoint = glm::vec3(x * CELL_SIZE, 0.0f, z * CELL_SIZE);
+	      
 	      spawnFound = true;
 	      level.grid[z][x] = EMPTY;
 	    }
@@ -101,8 +104,46 @@ bool loadLevel(const std::string& filename, Level& level)
 	}
     }
 
+  if (!spawnFound)
+    {
+      level.spawnPoint = glm::vec3(CELL_SIZE, 0.0f, CELL_SIZE);
+    }
+  
   level.name = filename;
 
   return true;
 }
 
+void createDefaultLevel(Level& level)
+{
+  level.width = 12;
+  level.height = 12;
+  level.name = "defualt level";
+  level.spawnPoint = glm::vec3( CELL_SIZE, 0.0f, CELL_SIZE);
+  level.spawnYaw = -90.0f;
+
+  level.grid.resize(level.height);
+  for (int z = 0; z < level.height; z++)
+    {
+      level.grid[z].resize(level.width);
+    }
+
+  std::string defaultMap[] = {
+    ".....S......",
+    "............",
+    "............",
+    "............",
+    "............",
+    "............",
+    "............",
+    "............",
+    "............",
+    "............",
+    "............",
+    "............",
+  };
+
+  for (int z = 0; z < level.height; z++)
+    for (int x = 0; x < level.width; x++)
+      level.grid[z][x] = charToCell(defaultMap[z][x]);
+}

@@ -6,7 +6,8 @@
 World::World()
 {
   //init world data
-  loadLevel("../levels/level.txt");
+  //if(!loadLevel("../levels/level1.txt"))
+    createDefaultLevel(currentLevel);
 }
 
 bool World::loadLevel(const std::string& filename)
@@ -122,7 +123,7 @@ void World::printCurrentLevel() const
 {
   if (levelLoaded)
     {
-      std::cout << "level loaded" << std::endl;
+      printLevel(currentLevel);
     }
   else
     std::cout << "no level" << std::endl;

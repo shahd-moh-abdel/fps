@@ -23,6 +23,7 @@ struct Level {
 CellType charToCell(char c);
 char cellToChar(CellType cell);
 bool loadLevel(const std::string& filename, Level& level);
-void createDefaultLevel(Level &level);
+void createDefaultLevel(Level& level);
+void printLevel(const Level& level);
 
 #endif 

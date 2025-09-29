@@ -28,7 +28,7 @@ int g_width = SCREEN_WIDTH;
 int g_height = SCREEN_HEIGHT;
 
 //camera
-Camera camera(glm::vec3(3.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(10.0f, 10.0f, 10.0f));
 World world;
 
 //mouse input
