@@ -13,12 +13,16 @@ enum CellType {
 };
 
 struct Level {
-  int width, hight;
+  int width, height;
   std::vector<std::vector<CellType>> grid;
+  glm::vec3 spawnPoint;
+  float spawnYaw;
   std::string name;
 };
 
-bool loadLevel();
+CellType charToCell(char c);
+char cellToChar(CellType cell);
+bool loadLevel(const std::string& filename, Level& level);
 void createDefaultLevel(Level &level);
 
 #endif 
