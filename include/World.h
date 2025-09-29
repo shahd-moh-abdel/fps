@@ -41,6 +41,7 @@ class World {
   Level currentLevel;
   bool levelLoaded;
 
+  void createDefaultLevel();
 };
 
 #endif

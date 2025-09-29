@@ -6,8 +6,8 @@
 World::World()
 {
   //init world data
-  //if(!loadLevel("../levels/level1.txt"))
-    createDefaultLevel(currentLevel);
+  if(!loadLevel("../levels/level1.txt"))
+    createDefaultLevel();
 }
 
 bool World::loadLevel(const std::string& filename)
@@ -23,6 +23,11 @@ bool World::loadLevel(const std::string& filename)
 void World::setLevel(const Level& level)
 {
   currentLevel = level;
+  levelLoaded = true;
+}
+
+void World::createDefaultLevel() {
+  ::createDefaultLevel(currentLevel);
   levelLoaded = true;
 }
 
