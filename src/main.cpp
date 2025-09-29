@@ -334,6 +334,11 @@ void processInput(GLFWwindow* window)
     {
       levelKeyPressed = false;
     }
+
+  if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS)
+    {
+      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
 }
 
 void cleanup()
