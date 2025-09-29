@@ -6,7 +6,7 @@
 World::World()
 {
   //init world data
-  if(!loadLevel("../levels/level1.txt"))
+  if(!loadLevel("../levels/level.txt"))
     createDefaultLevel();
 }
 

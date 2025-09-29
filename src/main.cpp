@@ -261,7 +261,7 @@ void processInput(GLFWwindow* window)
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
       //no flying
-      camera.processKeyboard(Camera::FORWARD, deltaTime);
+      camera.processKeyboard(FORWARD, deltaTime);
       glm::vec3 newPos = camera.getPosition();
       if (checkCollision(newPos))
 	camera.setPosition(oldPos);
@@ -269,7 +269,7 @@ void processInput(GLFWwindow* window)
   
   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-      camera.processKeyboard(Camera::BACKWARD, deltaTime);
+      camera.processKeyboard(BACKWARD, deltaTime);
       glm::vec3 newPos = camera.getPosition();
       if (checkCollision(newPos))
 	{
@@ -278,7 +278,7 @@ void processInput(GLFWwindow* window)
     }
   if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-      camera.processKeyboard(Camera::LEFT, deltaTime);
+      camera.processKeyboard(LEFT, deltaTime);
       glm::vec3 newPos = camera.getPosition();
       if (checkCollision(newPos))
 	{
@@ -287,12 +287,52 @@ void processInput(GLFWwindow* window)
     }
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-      camera.processKeyboard(Camera::RIGHT, deltaTime);
+      camera.processKeyboard(RIGHT, deltaTime);
       glm::vec3 newPos = camera.getPosition();
       if (checkCollision(newPos))
 	{
 	  camera.setPosition(oldPos);
 	}
+    }
+
+  //level loading controls
+  static bool levelKeyPressed = false;
+
+  //reload
+  if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && !levelKeyPressed)
+    {
+      cout << "/nREloading level..." << endl;
+      static vector<RenderBatch> worldBatches;
+      static bool worldBuilt = false;
+
+      if (world.loadLevel("../levels/level.txt"))
+	{
+	  const Level& currentLevel = world.getCurrentLevel();
+	  camera.setPosition(currentLevel.spawnPoint);
+	  camera.yaw = currentLevel.spawnYaw;
+	  camera.pitch = 0.0f;
+	  //update camera
+	  glm::vec3 front;
+	  front.x = cos(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
+	  front.y = sin(glm::radians(camera.pitch));
+	  front.z = sin(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
+	  camera.front = glm::normalize(front);
+	  camera.right = glm::normalize(glm::cross(camera.front, camera.worldUp));
+	  camera.up = glm::normalize(glm::cross(camera.right, camera.front));
+	}
+      levelKeyPressed = true;
+    }
+
+  if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && !levelKeyPressed)
+    {
+      world.printCurrentLevel();
+      levelKeyPressed = true;
+    }
+
+  if (glfwGetKey(window, GLFW_KEY_M) == GLFW_RELEASE &&
+      glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE)
+    {
+      levelKeyPressed = false;
     }
 }
 
@@ -329,6 +369,14 @@ int main()
   setupCube();
   setupShaders();
   setupTextures();
+
+  //spawn point
+  const Level& currentLevel = world.getCurrentLevel();
+  camera.setPosition(currentLevel.spawnPoint);
+  camera.yaw = currentLevel.spawnYaw;
+  camera.pitch = 0.0f;
+
+  world.printCurrentLevel();
   
   while (!glfwWindowShouldClose(window))
     {
