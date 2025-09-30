@@ -53,7 +53,7 @@ GLuint spriteShaderProgram = 0;
 vector<GLuint> textures;
 vector<const char *> textureNames = {
   "../res/wall.png",
-  "../res/floor.jpg",
+  "../res/floor.png",
   "../res/ceiling_2.png"
 };
 
