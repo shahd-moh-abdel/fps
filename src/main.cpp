@@ -17,6 +17,7 @@
 #include "../include/loadTexture.h"
 #include "../include/Camera.h"
 #include "../include/World.h"
+#include "../include/Enemy.h"
 
 using namespace std;
 
@@ -30,6 +31,7 @@ int g_height = SCREEN_HEIGHT;
 //camera
 Camera camera(glm::vec3(3.0f, 0.0f, 3.0f));
 World world;
+EnemyManager enemyManager;
 
 //mouse input
 bool firstMouse = true;
@@ -42,6 +44,7 @@ float lastFrame = 0.0f;
 GLuint cubeVAO = 0;
 GLuint cubeVBO = 0;
 GLuint shaderProgram = 0;
+GLuint spriteShaderProgram = 0;
 
 vector<GLuint> textures;
 vector<const char *> textureNames = {
@@ -49,6 +52,8 @@ vector<const char *> textureNames = {
   "../res/floor.jpg",
   "../res/ceiling_2.png"
 };
+
+GLuint enemyTexture = 0;
 
 // cube vertices with texture coordinates
 const GLuint NumVertices = 36;
@@ -122,6 +127,22 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
   camera.processMouseMovement(xoffset, yoffset);
 }
 
+void mouse_button_callback(GLFWwindow* widnow, int button, int action, int mods)
+{
+  if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    {
+      glm::vec3 shootOrigin = camera.getPosition();
+      glm::vec3 shootDirection = camera.front;
+
+      bool hit = enemyManager.rayCastShoot(shootOrigin, shootDirection, 100.0f);
+
+      if (hit)
+	cout << "HIT!" << endl;
+      else
+	cout << "MISS!" << endl;
+    }
+}
+
 void setupCube()
 {
   //gen and bind vao and vbo
@@ -154,6 +175,9 @@ void setupShaders()
 {
   auto shader = parseShader("../res/cube.glsl");
   shaderProgram = createShader(shader.vertexShader, shader.fragmentShader);
+
+  auto spriteShader = parseShader("../res/sprite.glsl");
+  spriteShaderProgram = createShader(spriteShader.vertexShader, spriteShader.fragmentShader);
 }
 
 void setupTextures()
@@ -165,6 +189,46 @@ void setupTextures()
       GLuint tex = loadTexture(textureName);
       textures.push_back(tex);
     }
+
+  enemyTexture = loadTexture("../res/enemy.png");
+}
+
+void drawCross()
+{
+  glDisable(GL_DEPTH_TEST);
+  
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  glOrtho(0, SCREEN_WIDTH, 0, SCREEN_HEIGHT, -1, 1);
+
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadIdentity();
+
+  glColor3f(1.0f, 1.0f, 1.0f);
+  glLineWidth(2.0f);
+
+  float centerX = SCREEN_WIDTH / 2.0f;
+  float centerY = SCREEN_HEIGHT / 2.0f;
+  float size = 10.0f;
+
+  glBegin(GL_LINES);
+
+  glVertex2f(centerX - size, centerY);
+  glVertex2f(centerX + size, centerY);
+
+  glVertex2f(centerX, centerY - size);
+  glVertex2f(centerX, centerY + size);
+
+  glEnd();
+
+  glPopMatrix();
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+  glMatrixMode(GL_MODELVIEW);
+
+  glEnable(GL_DEPTH_TEST);
 }
 
 void display()
@@ -242,6 +306,20 @@ void display()
     }
   
   glBindVertexArray(0);
+
+  glUseProgram(spriteShaderProgram);
+  glUniformMatrix4fv(glGetUniformLocation(spriteShaderProgram, "u_view"), 1, GL_FALSE, glm::value_ptr(view));
+  glUniformMatrix4fv(glGetUniformLocation(spriteShaderProgram, "u_projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  enemyManager.render(spriteShaderProgram, cubeVAO, enemyTexture, view, projection, camera.getPosition());
+
+  glDisable(GL_BLEND);
+
+  drawCross();
+  
 }
 
 bool checkCollision(glm::vec3 newPos)
@@ -254,7 +332,6 @@ void processInput(GLFWwindow* window)
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
 
-  
   glm::vec3 oldPos = camera.getPosition();
   
   //wasd movement
@@ -311,6 +388,11 @@ void processInput(GLFWwindow* window)
 	  camera.setPosition(currentLevel.spawnPoint);
 	  camera.yaw = currentLevel.spawnYaw;
 	  camera.pitch = 0.0f;
+
+	  enemyManager = EnemyManager();
+	  for (const auto& enemyPos : currentLevel.enemySpawns)
+	    enemyManager.addEnemy(enemyPos);
+	  
 	  //update camera
 	  glm::vec3 front;
 	  front.x = cos(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
@@ -359,6 +441,11 @@ void cleanup()
       glDeleteProgram(shaderProgram);
       shaderProgram = 0;
     }
+  if (spriteShaderProgram != 0)
+    {
+      glDeleteProgram(spriteShaderProgram);
+      spriteShaderProgram = 0;
+    }
 }
 
 int main()
@@ -369,7 +456,8 @@ int main()
   glEnable(GL_DEPTH_TEST);
 
   glfwSetCursorPosCallback(window, mouse_callback);
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); //hide cursor
+  glfwSetMouseButtonCallback(window, mouse_button_callback);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
   
   setupCube();
   setupShaders();
@@ -381,6 +469,11 @@ int main()
   camera.yaw = currentLevel.spawnYaw;
   camera.pitch = 0.0f;
 
+  for (const auto& enemyPos : currentLevel.enemySpawns)
+    {
+      enemyManager.addEnemy(enemyPos);
+    }
+
   world.printCurrentLevel();
   
   while (!glfwWindowShouldClose(window))
@@ -388,7 +481,8 @@ int main()
       float currentFrame = glfwGetTime();
       deltaTime = currentFrame - lastFrame;
       lastFrame = currentFrame;
-      
+
+      enemyManager.update(deltaTime);
       processInput(window);
       display();
       

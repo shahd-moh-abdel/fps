@@ -10,6 +10,7 @@ add_executable(fps
 		src/Camera.cpp
 		src/World.cpp
 		src/Level.cpp
+		src/Enemy.cpp
 		glad.c)
 
 find_package(glfw3 3.3 REQUIRED)
