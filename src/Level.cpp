@@ -12,8 +12,9 @@ CellType charToCell(char c) {
   switch (c) {
   case ' ': case '.': return EMPTY;
   case '#': return WALL;
-  case 'P': return PILLAR;
-  case 'S': return SPAWN;
+  case 'P': case 'p': return PILLAR;
+  case 'S': case 's': return SPAWN;
+  case 'E': case 'e': return ENEMY;
   default: return WALL;
   }
 }
@@ -26,13 +27,16 @@ char cellToChar(CellType cell) {
     case WALL: return '#';
     case PILLAR: return 'P';
     case SPAWN: return 'S';
+    case ENEMY: return 'E';
     default: return '?';
     }
 }
 
 void printLevel(const Level& level)
 {
-  std::cout << "Lavel Ma"  << std::endl;
+  std::cout << "Lavel Map: "<< level.name << std::endl;
+  std::cout << "enemies: " << level.enemySpawns.size() << std::endl;
+
   for (int z = 0; z < level.height; z++)
     {
       for (int x = 0; x < level.width; x++)
@@ -50,7 +54,7 @@ bool loadLevel(const std::string& filename, Level& level)
   std::ifstream file(filename);
   if (!file.is_open())
     {
-      std::cout << "error could not open file" << filename << std::endl;
+      std::cout << "error could not open file " << filename << std::endl;
       return false;
     }
 
@@ -82,7 +86,8 @@ bool loadLevel(const std::string& filename, Level& level)
 
   bool spawnFound = false;
   level.spawnYaw = -90.0f;
-
+  level.enemySpawns.clear();
+  
   for (int z = 0; z < level.height; z++)
     {
       const std::string& currentLine = levelLines[z];
@@ -99,6 +104,13 @@ bool loadLevel(const std::string& filename, Level& level)
 	      
 	      spawnFound = true;
 	      level.grid[z][x] = EMPTY;
+	    }
+	  else if (cellType == ENEMY)
+	    {
+	      glm::vec3 enemyPos = glm::vec3(x * CELL_SIZE, 0.0f, z * CELL_SIZE);
+	      level.enemySpawns.push_back(enemyPos);
+	      level.grid[z][x] = EMPTY;
+	      std::cout << "enemy spawn found" << std::endl;
 	    }
 	  
 	}
@@ -121,7 +133,8 @@ void createDefaultLevel(Level& level)
   level.name = "defualt level";
   level.spawnPoint = glm::vec3( CELL_SIZE, 0.0f, CELL_SIZE);
   level.spawnYaw = -90.0f;
-
+  level.enemySpawns.clear();
+  
   level.grid.resize(level.height);
   for (int z = 0; z < level.height; z++)
     {
@@ -130,13 +143,13 @@ void createDefaultLevel(Level& level)
 
   std::string defaultMap[] = {
     "############",
+    "#S.........#",
     "#..........#",
     "#..........#",
+    "#......E...#",
     "#..........#",
     "#..........#",
-    "#..........#",
-    "#..........#",
-    "#..........#",
+    "#......E...#",
     "#..........#",
     "#..........#",
     "#..........#",
@@ -144,6 +157,24 @@ void createDefaultLevel(Level& level)
   };
 
   for (int z = 0; z < level.height; z++)
-    for (int x = 0; x < level.width; x++)
-      level.grid[z][x] = charToCell(defaultMap[z][x]);
+    {
+      for (int x = 0; x < level.width; x++)
+	{
+	  char c = defaultMap[z][x];
+	  CellType cellType = charToCell(c);
+	  level.grid[z][x] = cellType;
+
+	  if (cellType == ENEMY)
+	    {
+	      level.enemySpawns.push_back(glm::vec3(x * CELL_SIZE, 0.0f, z * CELL_SIZE));
+	      level.grid[z][x] = EMPTY;
+	    }
+	  else if (cellType == SPAWN)
+	    {
+	      level.spawnPoint = glm::vec3(x * CELL_SIZE, 0.0f, z * CELL_SIZE);
+	      level.grid[z][x] = EMPTY;
+	    }
+	  
+	}
+    }
 }

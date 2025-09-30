@@ -10,6 +10,7 @@ enum CellType {
   WALL = 1,
   PILLAR = 2,
   SPAWN = 3,
+  ENEMY = 4,
 };
 
 struct Level {
@@ -18,6 +19,7 @@ struct Level {
   glm::vec3 spawnPoint;
   float spawnYaw;
   std::string name;
+  std::vector<glm::vec3> enemySpawns;
 };
 
 CellType charToCell(char c);
