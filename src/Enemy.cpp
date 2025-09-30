@@ -65,6 +65,50 @@ void EnemyManager::render(GLuint shaderProgram, GLuint VAO, GLuint texture, cons
   glBindVertexArray(0);
 }
 
+bool EnemyManager::rayCastShoot(glm::vec3 origin, glm::vec3 direction, float maxDistance)
+{
+  float closestDistance = maxDistance;
+  Enemy* hitEnemy = nullptr;
+
+  for (auto& enemy : enemies)
+    {
+      if (!enemy.alive) continue;
+
+      float enemyRadius = enemy.size * 0.5f;
+
+      glm::vec3 oc = origin - enemy.position;
+      float a = glm::dot(direction, direction);
+      float b = 2.0f * glm::dot(oc, direction);
+      float c = glm::dot(oc, oc) - enemyRadius * enemyRadius;
+      float discriminant = b * b - 4 * a * c;
+
+      if (discriminant >= 0)
+	{
+	  float t = (-b - sqrt(discriminant)) / (2.0f * a);
+	  if (t > 0 && t < closestDistance)
+	    {
+	      closestDistance = t;
+	      hitEnemy  = &enemy;
+	    }
+	}
+    }
+
+  if (hitEnemy)
+    {
+      hitEnemy->takeDamage(30.0f);
+      std::cout << "Hit, health: " << hitEnemy->health << std::endl;
+
+      if (!hitEnemy->alive)
+	{
+	  killCount++;
+	  std::cout << "Enemy Killed, Kills: "<< killCount << std::endl;
+	}
+      return true;
+    }
+
+  return false;
+}
+
 int EnemyManager::getAliveCount() const
 {
   int count = 0;
