@@ -1,6 +1,8 @@
 #ifndef ENEMY_H
 #define ENEMY_H
 
+#include "GLFW/glfw3.h"
+#include "glm/fwd.hpp"
 #include "glm/glm.hpp"
 #include <vector>
 
@@ -30,15 +32,21 @@ class EnemyManager {
  public:
   EnemyManager();
 
-  void addEnemy();
-  void update();
-  void render();
+  void addEnemy(glm::vec3 position);
+  void update(float deltaTime);
+  void render(GLuint shaderProgram, GLuint VAO, GLuint texture, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos);
 
+  bool rayCastShoot(glm::vec3 origin, glm::vec3 direction, float maxDistance);
+
+  const std::vector<Enemy>& getEnemies() const { return enemies; }
+  int getAliveCount() const;
+  int getKillCount() const { return killCount; }
+  
  private:
   std::vector<Enemy> enemies;
   int killCount;
 
-  glm::mat4 createBillboardMatrix();
+  glm::mat4 createBillboardMatrix(glm::vec3 position, glm::vec3 cameraPos, float size);
 };
 
 #endif
