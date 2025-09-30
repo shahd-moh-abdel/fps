@@ -44,6 +44,10 @@ float lastFrame = 0.0f;
 GLuint cubeVAO = 0;
 GLuint cubeVBO = 0;
 GLuint shaderProgram = 0;
+
+GLuint crossVAO = 0;
+GLuint crossVBO = 0;
+GLuint crossShader = 0;
 GLuint spriteShaderProgram = 0;
 
 vector<GLuint> textures;
@@ -193,41 +197,58 @@ void setupTextures()
   enemyTexture = loadTexture("../res/enemy.png");
 }
 
+void setupCross()
+{
+  float crossVertices[] = {
+    -0.02f, 0.0f, 0.02f, 0.0f,
+    0.0f, -0.02f, 0.0f, 0.02f
+  };
+
+  glGenVertexArrays(1, &crossVAO);
+  glGenBuffers(1, &crossVBO);
+  glBindVertexArray(crossVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, crossVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(crossVertices), crossVertices, GL_STATIC_DRAW);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);
+  glBindVertexArray(0);
+
+  const char* vSrc = "#version 330 core\n"
+    "layout(location = 0)in vec2 p;\n"
+    "void main() {\n"
+    "gl_Position = vec4(p, 0, 1);}";
+
+  const char* fSrc = "#version 330 core\n"
+    "out vec4 c;\n"
+    "void main(){\n"
+    "c=vec4(1,1,1,1);}";
+
+  GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(vs, 1, &vSrc, NULL);
+  glCompileShader(vs);
+
+  GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(fs, 1, &fSrc, NULL);
+  glCompileShader(fs);
+
+  crossShader = glCreateProgram();
+  glAttachShader(crossShader, vs);
+  glAttachShader(crossShader, fs);
+  glLinkProgram(crossShader);
+  glDeleteShader(vs);
+  glDeleteShader(fs);
+}
+
 void drawCross()
 {
   glDisable(GL_DEPTH_TEST);
-  
-  glMatrixMode(GL_PROJECTION);
-  glPushMatrix();
-  glLoadIdentity();
-  glOrtho(0, SCREEN_WIDTH, 0, SCREEN_HEIGHT, -1, 1);
 
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glLoadIdentity();
-
-  glColor3f(1.0f, 1.0f, 1.0f);
+  glUseProgram(crossShader);
+  glBindVertexArray(crossVAO);
   glLineWidth(2.0f);
-
-  float centerX = SCREEN_WIDTH / 2.0f;
-  float centerY = SCREEN_HEIGHT / 2.0f;
-  float size = 10.0f;
-
-  glBegin(GL_LINES);
-
-  glVertex2f(centerX - size, centerY);
-  glVertex2f(centerX + size, centerY);
-
-  glVertex2f(centerX, centerY - size);
-  glVertex2f(centerX, centerY + size);
-
-  glEnd();
-
-  glPopMatrix();
-  glMatrixMode(GL_PROJECTION);
-  glPopMatrix();
-  glMatrixMode(GL_MODELVIEW);
-
+  glDrawArrays(GL_LINES, 0, 4);
+  glBindVertexArray(0);
+  
   glEnable(GL_DEPTH_TEST);
 }
 
@@ -446,6 +467,12 @@ void cleanup()
       glDeleteProgram(spriteShaderProgram);
       spriteShaderProgram = 0;
     }
+  if (crossVBO != 0)
+    glDeleteBuffers(1, &crossVBO);
+  if (crossVAO != 1)
+    glDeleteVertexArrays(1, &crossVAO);
+  if (crossShader != 0)
+    glDeleteProgram(crossShader);
 }
 
 int main()
@@ -462,6 +489,7 @@ int main()
   setupCube();
   setupShaders();
   setupTextures();
+  setupCross();
 
   //spawn point
   const Level& currentLevel = world.getCurrentLevel();
