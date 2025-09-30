@@ -110,7 +110,6 @@ bool loadLevel(const std::string& filename, Level& level)
 	      glm::vec3 enemyPos = glm::vec3(x * CELL_SIZE, 0.0f, z * CELL_SIZE);
 	      level.enemySpawns.push_back(enemyPos);
 	      level.grid[z][x] = EMPTY;
-	      std::cout << "enemy spawn found" << std::endl;
 	    }
 	  
 	}

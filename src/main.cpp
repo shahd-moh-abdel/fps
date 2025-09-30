@@ -399,7 +399,7 @@ void processInput(GLFWwindow* window)
   //reload
   if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && !levelKeyPressed)
     {
-      cout << "/nREloading level..." << endl;
+      cout << "\n Reloading level..." << endl;
       static vector<RenderBatch> worldBatches;
       static bool worldBuilt = false;
 
@@ -501,8 +501,6 @@ int main()
     {
       enemyManager.addEnemy(enemyPos);
     }
-
-  world.printCurrentLevel();
   
   while (!glfwWindowShouldClose(window))
     {
