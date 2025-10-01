@@ -113,6 +113,16 @@ static const GLfloat cubeVertices[NumVertices * 8] = {
   -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,         0.0f, 1.0f, 0.0f
 };
 
+
+void framebufferSizeCallback(GLFWwindow* window, int width, int height)
+{
+  glViewport(0, 0, width, height);  
+
+  g_width = width;
+  g_height = height;
+  
+}   
+
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
   if (firstMouse)
@@ -485,6 +495,7 @@ int main()
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetMouseButtonCallback(window, mouse_button_callback);
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
+  glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
   
   setupCube();
   setupShaders();
